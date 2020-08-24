@@ -45,7 +45,6 @@ mat = h5py.File(data_load_address + '/H_train.mat', 'r')
 data = np.transpose(mat['H_train'])  # shape=(320000, 1024)
 data = data.astype('float32')
 data = np.reshape(data, [len(data), img_channels, img_height, img_width])
-# split data for training(70%) and validation(30%)
 np.random.shuffle(data)
 start = int(data.shape[0] * 0.7)
 x_train, x_test = data[:start], data[start:]
@@ -68,13 +67,10 @@ for epoch in range(epochs):
         if epoch == 300:
             for param_group in optimizer.param_groups:
                 param_group['lr'] = learning_rate * 0.1
-        # measure data loading time
         input = input.cuda()
-
         # compute output
         output = model(input)
         loss = criterion(output, input)
-
         # compute gradient and do Adam step
         optimizer.zero_grad()
         loss.backward()
@@ -83,11 +79,11 @@ for epoch in range(epochs):
             print('Epoch: [{0}][{1}/{2}]\t'
                   'Loss {loss:.4f}\t'.format(
                 epoch, i, len(train_loader), loss=loss.item()))
+    # model evaluating
     model.eval()
     total_loss = 0
     with torch.no_grad():
         for i, input in enumerate(test_loader):
-            # convert numpy to Tensor
             input = input.cuda()
             output = model(input)
             total_loss += criterion(output, input).item() * input.size(0)
