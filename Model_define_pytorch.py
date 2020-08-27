@@ -53,7 +53,7 @@ class Quantization(torch.autograd.Function):
         # Gradients of constant arguments to forward must be None.
         # Gradient of a number is the sum of its four bits.
         b, _ = grad_output.shape
-        grad_num = torch.sum(grad_output.reshape(b, -1, ctx.constant), dim=2)
+        grad_num = torch.sum(grad_output.reshape(b, -1, ctx.constant), dim=2) / 4
         return grad_num, None
 
 
@@ -72,7 +72,8 @@ class Dequantization(torch.autograd.Function):
         # Gradients of non-Tensor arguments to forward must be None.
         # repeat the gradient of a Num for four time.
         b, c = grad_output.shape
-        grad_bit = grad_output.repeat(1, 1, ctx.constant)
+        grad_output = grad_output.unsqueeze(2) / 4
+        grad_bit = grad_output.expand(b, c, ctx.constant)
         return torch.reshape(grad_bit, (-1, c * ctx.constant)), None
 
 
