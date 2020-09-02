@@ -53,7 +53,7 @@ class Quantization(torch.autograd.Function):
         # Gradients of constant arguments to forward must be None.
         # Gradient of a number is the sum of its four bits.
         b, _ = grad_output.shape
-        grad_num = torch.sum(grad_output.reshape(b, -1, ctx.constant), dim=2) / ctx.constant
+        grad_num = torch.sum(grad_output.reshape(b, -1, ctx.constant), dim=2)
         return grad_num, None
 
 
